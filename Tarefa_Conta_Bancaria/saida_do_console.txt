@@ -1,0 +1,87 @@
+
+==============================================================
+ETAPA 2 - CRIANDO OS OBJETOS (DUAS CONTAS DE TITULARES DIFERENTES)
+==============================================================
+Conta 0001-5 | Titular: Ana Souza | CPF: ***.456.789** | Saldo: R$ 2.000,00 | Taxas pagas: R$ 0,00
+Conta 0002-3 | Titular: Bruno Lima | CPF: ***.654.321** | Saldo: R$ 500,00 | Taxas pagas: R$ 0,00
+
+==============================================================
+PROVA DE QUE CADA OBJETO TEM SEU PRÓPRIO ESTADO
+==============================================================
+Depositando R$ 300,00 APENAS na conta da Ana:
+[OK] Depósito de R$ 300,00 na conta 0001-5. Novo saldo: R$ 2.300,00
+
+Note que o saldo do Bruno não mudou:
+Conta 0001-5 | Titular: Ana Souza | CPF: ***.456.789** | Saldo: R$ 2.300,00 | Taxas pagas: R$ 0,00
+Conta 0002-3 | Titular: Bruno Lima | CPF: ***.654.321** | Saldo: R$ 500,00 | Taxas pagas: R$ 0,00
+
+==============================================================
+ETAPA 4 - TESTE 1: TRANSFERÊNCIA VÁLIDA (SEM TAXA)
+==============================================================
+Ana transfere R$ 500,00 para Bruno. Valor dentro do limite e
+abaixo de R$ 1.000,00, então não há taxa.
+
+-> Transferência de R$ 500,00 | Ana Souza (0001-5) para Bruno Lima (0002-3)
+[OK] Transferência concluída. Debitado R$ 500,00 (valor R$ 500,00 + taxa R$ 0,00).
+     Saldo Ana Souza: R$ 1.800,00 | Saldo Bruno Lima: R$ 1.000,00
+
+Resultado esperado: operação aceita | Obtido: operação aceita -> TESTE OK
+
+==============================================================
+ETAPA 4 - TESTE 2: TRANSFERÊNCIA VÁLIDA COM A REGRA EXTRA (TAXA)
+==============================================================
+Ana transfere R$ 1.200,00 para Bruno. Passa de R$ 1.000,00,
+então a regra extra cobra 1% de taxa (R$ 12,00) da Ana.
+
+-> Transferência de R$ 1.200,00 | Ana Souza (0001-5) para Bruno Lima (0002-3)
+   Regra extra aplicada: taxa de R$ 12,00 (1%, mínimo R$ 2,00) por transferir acima de R$ 1.000,00.
+[OK] Transferência concluída. Debitado R$ 1.212,00 (valor R$ 1.200,00 + taxa R$ 12,00).
+     Saldo Ana Souza: R$ 588,00 | Saldo Bruno Lima: R$ 2.200,00
+
+Resultado esperado: operação aceita | Obtido: operação aceita -> TESTE OK
+
+==============================================================
+ETAPA 4 - TESTE 3: TRANSFERÊNCIA QUE FALHA PELO LIMITE
+==============================================================
+Bruno tenta transferir R$ 2.000,00, acima do limite de R$ 1.500,00
+por transferência definido pela dupla. Deve ser recusada.
+
+-> Transferência de R$ 2.000,00 | Bruno Lima (0002-3) para Ana Souza (0001-5)
+[ERRO] Transferência recusada: valor acima do limite por transferência (limite R$ 1.500,00, pedido R$ 2.000,00).
+
+Resultado esperado: operação recusada | Obtido: operação recusada -> TESTE OK
+
+==============================================================
+ETAPA 4 - TESTE 4: TRANSFERÊNCIA QUE DEIXARIA O SALDO NEGATIVO
+==============================================================
+Ana tenta transferir R$ 1.050,00, mas com a taxa de R$ 10,50 o total
+passa do saldo dela. A regra do saldo negativo bloqueia.
+
+-> Transferência de R$ 1.050,00 | Ana Souza (0001-5) para Bruno Lima (0002-3)
+   Regra extra aplicada: taxa de R$ 10,50 (1%, mínimo R$ 2,00) por transferir acima de R$ 1.000,00.
+[ERRO] Transferência recusada: saldo insuficiente (saldo R$ 588,00, necessário R$ 1.060,50 já com a taxa).
+
+Resultado esperado: operação recusada | Obtido: operação recusada -> TESTE OK
+
+==============================================================
+ETAPA 4 - TESTE 5: OPERAÇÕES COM VALORES INVÁLIDOS
+==============================================================
+Zero e negativo devem ser recusados em qualquer operação.
+
+[ERRO] Depósito: valor inválido (R$ 0,00). O valor deve ser maior que zero.
+[ERRO] Saque: valor inválido (R$ -50,00). O valor deve ser maior que zero.
+-> Transferência de R$ -100,00 | Ana Souza (0001-5) para Bruno Lima (0002-3)
+[ERRO] Transferência: valor inválido (R$ -100,00). O valor deve ser maior que zero.
+
+
+Resultado esperado: operação recusada | Obtido: operação recusada -> TESTE OK
+
+==============================================================
+SITUAÇÃO FINAL DAS CONTAS
+==============================================================
+Conta 0001-5 | Titular: Ana Souza | CPF: ***.456.789** | Saldo: R$ 588,00 | Taxas pagas: R$ 12,00
+Conta 0002-3 | Titular: Bruno Lima | CPF: ***.654.321** | Saldo: R$ 2.200,00 | Taxas pagas: R$ 0,00
+
+Conferência: R$ 2.000,00 + R$ 500,00 (aberturas) + R$ 300,00 (depósito) = R$ 2.800,00
+Somando saldos + taxas cobradas: R$ 2.800,00
+Nenhum dinheiro foi criado nem perdido nas operações.
